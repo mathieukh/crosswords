@@ -17,9 +17,11 @@ array = np.array(
     ['0','-','0','-','-','-','0','-','0'],
     ['-','-','-','-','0','-','-','-','-'],
     ['-','0','-','0','0','0','-','0','-'],
-    ['-','-','-','-','0','-','-','-','-'],
+    ['-','-','-','-','0','-','-','-','-']
 ]);
     
 crossword = cr.Crossword(array)
     
-(X,D,C) = crossword.solve()
+crossword.solve()
+
+crosswordSolved = crossword.getCrossword()

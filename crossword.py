@@ -17,10 +17,21 @@ class Crossword:
         (self.height, self.width) = crossword.shape;
         self.words = self.getWords(crossword)
         self.constraints = self.getConstraints()
-        self.AC3 = self.getCSP()
+        self.CSP = self.getCSP()
+        
+    def getCrossword(self):
+        cr = np.array([['0' for j in range(self.width)]for i in range(self.height)])
+        for k,w in self.words.items():
+            (indice,start_char) = w['index']
+            l = len(w['word'])
+            for i in range(l):
+                if w['orientation'] == 'H':
+                    cr[indice][(start_char+i)] = w['word'][i]
+                else:
+                    cr[(start_char+i)][indice] = w['word'][i]
+        return cr
         
     def getCSP(self):
-        
         dico = []
         dico += ['SITE','CANS']
         dico += ['BEES','SIDE']
@@ -96,4 +107,8 @@ class Crossword:
         return contraints
         
     def solve(self):
-        return self.AC3.solve()
+        (X,D,C) = self.CSP.solve()
+        for kd,d in D.items():
+            if(len(d) == 1):
+                self.words[kd]['word'] = d[0]
+                
