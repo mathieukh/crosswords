@@ -5,6 +5,8 @@ Created on Wed Feb 10 20:27:44 2016
 @author: sylom
 """
 
+import random
+
 class CSP:
     """
     Class CSP contenant l'algorithme AC3
@@ -78,4 +80,15 @@ class CSP:
     """
     def solve(self):
         self.ac3()
-        return (self.X,self.D, (self.R1,self.R2))
+        """
+        self.V = []
+        self.I = {}
+        for x in self.X:
+            l = len(self.D[x])
+            if l == 0:
+                raise Exception
+            elif l == 1:
+                self.I[l] = self.D[x][0]
+            else:
+                self.V += [x]
+        """

@@ -20,10 +20,10 @@ class Crossword:
     remplit par des - pour les cases blanches ou des lettres et un caractère quelconque pour les cases noires
     Par convention et pour faciliter l'unification, on définit les cases noirés par des *
     """
-    def __init__(self, crossword):
+    def __init__(self, crossword, dico):
         (self.height, self.width) = crossword.shape;
         self.words = self.getWords(crossword)
-        self.CSP = self.getCSP()
+        self.CSP = self.getCSP(dico)
         
     """ 
     Fonction générant un np.array depuis l'instance remplit des mots contenues dans words
@@ -45,7 +45,7 @@ class Crossword:
     et retourner un dictionnaire dont la clé d'index attribue un numéro unique au mot
     Chaque mot comportera:
     - son orientation 'H' ou 'V'
-    - Le mot sous de string
+    - Le mot sous forme de string
     - un couple index (i,j) où i est l'indice ligne ou colonne selon l'orientation et 
     j l'indice d'où commence le mot dans la ligne ou colonne
     """
@@ -109,19 +109,14 @@ class Crossword:
     Fonction générant le CSP du mots croisés
     """
         
-    def getCSP(self):
+    def getCSP(self,dico):
         
         """
         On définit un dictionnaire de mots (un vrai dictionnaire) qui sera contenu dans une liste
         Pour cet exemple, le dico est hardcodé mais on peut imaginer un argument à la fonction qui permettra de définir le dico
         """
-        dico = []
-        dico += ['SITE','CANS']
-        dico += ['BEES','SIDE']
-        dico += ['ANT', 'SUN']
-        dico += ['IDAS','AXIS','IDLY','DEER','EAST','READ','SUB','IVE','ENDED','TEE','LOS','SASSY','STAND','ALI','EVE','DRIVE','RED','SEE']
-        
         """
+        
         On définit l'ensemble des fonctions qui permettront de définir les contraintes (voir AC3 pour comprendre)
         La fonction testLen permet de savoir si la longueur de x est égale à n
         La fonction testCharacter permet de savoir si le caractère i du mot w est égale à c
@@ -193,9 +188,11 @@ class Crossword:
     on les écrit donc dans le dictionnaire words qui permettra de reconstruire par la suite le mots croisés avec
     les mots trouvés
     """
+    
+    """
     def solve(self):
         (X,D,C) = self.CSP.solve()
         for kd,d in D.items():
             if(len(d) == 1):
                 self.words[kd]['word'] = d[0]
-                
+    """    
