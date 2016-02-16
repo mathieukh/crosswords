@@ -21,6 +21,7 @@ class Crossword:
     Par convention et pour faciliter l'unification, on définit les cases noirés par des *
     """
     def __init__(self, crossword, dico):
+        self.crossword = crossword
         (self.height, self.width) = crossword.shape;
         self.words = self.getWords(crossword)
         self.CSP = self.getCSP(dico)
@@ -189,10 +190,8 @@ class Crossword:
     les mots trouvés
     """
     
-    """
+    
     def solve(self):
-        (X,D,C) = self.CSP.solve()
-        for kd,d in D.items():
-            if(len(d) == 1):
-                self.words[kd]['word'] = d[0]
-    """    
+        I = self.CSP.solve()
+        for kd,d in I.items():
+            self.words[kd]['word'] = d  
