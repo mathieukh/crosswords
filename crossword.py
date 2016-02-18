@@ -5,6 +5,7 @@ Created on Tue Feb  9 22:02:42 2016
 @author: sylom
 """
 import re
+import tkinter as tk
 import numpy as np
 import functools as ft
 import solver as sl
@@ -21,10 +22,67 @@ class Crossword:
     Par convention et pour faciliter l'unification, on définit les cases noirés par des *
     """
     def __init__(self, crossword, dico):
-        self.crossword = crossword
         (self.height, self.width) = crossword.shape;
         self.words = self.getWords(crossword)
         self.CSP = self.getCSP(dico)
+        
+        
+    @staticmethod
+    def generateCrossword(height,width, numberBlocks):
+        size = height*width
+        ar = np.empty(size, dtype=np.str)
+        for i in range(size):
+            if i < numberBlocks:
+                ar[i] = '*'
+            else:
+                ar[i]= '-'
+        np.random.shuffle(ar)
+        ar = np.reshape(ar, (height, width))
+        return ar
+        
+        
+    def displayCrossword(self):
+        crossword = self.getCrossword()
+        fenetre = tk.Tk()
+        l=0
+        c=0
+        for ligne in crossword:
+            l+=1
+            larg=ligne.size
+            for colonne in ligne:
+                c=c+1
+                if(colonne=='-'):
+                    tk.Button(fenetre, bg="white", width=5, height=2).grid(row=l, column=c-(l-1)*larg)
+                elif(colonne=='*'):
+                    tk.Button(fenetre, bg="black", width=5, height=2).grid(row=l, column=c-(l-1)*larg)
+                else:
+                    tk.Button(fenetre, text='%s' %colonne, bg="white", width=5, height=2).grid(row=l, column=c-(l-1)*larg)
+        menubar = tk.Menu(fenetre)
+        
+        def alert():
+            tk.showinfo("alerte", "Bravo!")
+
+        menu1 = tk.Menu(menubar, tearoff=0)
+        menu1.add_command(label="Créer", command=alert)
+        menu1.add_command(label="Editer", command=alert)
+        menu1.add_separator()
+        menu1.add_command(label="Quitter", command=fenetre.quit)
+        menubar.add_cascade(label="Fichier", menu=menu1)
+        
+        menu2 = tk.Menu(menubar, tearoff=0)
+        menu2.add_command(label="Couper", command=alert)
+        menu2.add_command(label="Copier", command=alert)
+        menu2.add_command(label="Coller", command=alert)
+        menubar.add_cascade(label="Editer", menu=menu2)
+        
+        menu3 = tk.Menu(menubar, tearoff=0)
+        menu3.add_command(label="A propos", command=alert)
+        menubar.add_cascade(label="Aide", menu=menu3)
+        
+        fenetre.config(menu=menubar)      
+        
+        fenetre.mainloop()
+        return
         
     """ 
     Fonction générant un np.array depuis l'instance remplit des mots contenues dans words

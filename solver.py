@@ -5,8 +5,6 @@ Created on Wed Feb 10 20:27:44 2016
 @author: sylom
 """
 
-import random
-
 class CSP:
     """
     Class CSP contenant l'algorithme AC3
@@ -72,7 +70,7 @@ class CSP:
             (x,y) = worklist.pop()
             if self.arcReduce(x,y):
                 worklist = list(set(list(filter(lambda c: not(c[0] == y) and c[1] == x, list(self.R2.keys()))) + worklist))
-    
+                    
     """
     Fonction solve permettant simplement d'appeler la procédure de filtrage AC3
     et de renvoyer l'ensemble des variables de l'instance à savoir X,D,C
@@ -80,6 +78,7 @@ class CSP:
     """
     def solve(self):
         self.ac3()
+        return
         """
         self.V = []
         self.I = {}
