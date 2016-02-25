@@ -185,13 +185,10 @@ class Crossword:
         """
         
         On définit l'ensemble des fonctions qui permettront de définir les contraintes (voir AC3 pour comprendre)
-        La fonction testLen permet de savoir si la longueur de x est égale à n
         La fonction testCharacter permet de savoir si le caractère i du mot w est égale à c
         La fonction testSameCharacters permet de savoir si le caractère i1 du mot w1 est égale au caractère i2 du mot w2
         La fonction differentWord permet de vérifier que les mots w1 et w2 sont bien différents
-        """
-        def testLen(x,n):
-            return len(x) == n    
+        """ 
         def testCharacter(w,i,c):
             return w[i] == c    
         def testSameCharacters(w1,w2,i1,i2):
@@ -206,7 +203,7 @@ class Crossword:
         X = list(self.words.keys())
         D = {}
         for x in X:
-            D[x] = dico.copy()
+            D[x] = list(filter(lambda w: len(self.words[x]['word']) == len(w) ,dico.copy()))
             
         """
         On initialise R1 et R2
@@ -217,8 +214,7 @@ class Crossword:
         R2 = {}   
         
         for k,w in self.words.items():
-            R1[k] = [ft.partial(testLen, n=len(w['word']))]
-            R1[k] += [ft.partial(testCharacter, i=m.start(), c=m.group(0)) for m in re.finditer('[a-zA-Z]', w['word'])]
+            R1[k] = [ft.partial(testCharacter, i=m.start(), c=m.group(0)) for m in re.finditer('[a-zA-Z]', w['word'])]
             
         """
         On ajoute à l'ensemble des couples la contrainte permettant de vérifier que tous les mots sont différents
