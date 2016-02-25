@@ -26,6 +26,11 @@ class Crossword:
         self.words = self.getWords(crossword)
         self.CSP = self.getCSP(dico)
         
+    """
+    Fonction permettant de générer une grille de mots croisés.
+    La fonction prend 3 paramètres height, width et numberBlocks permettant respectivement
+    de une grille de la taille height * width ayant un nombre de blocs noirs égal à numberBlocks
+    """
         
     @staticmethod
     def generateCrossword(height,width, numberBlocks):
@@ -40,6 +45,9 @@ class Crossword:
         ar = np.reshape(ar, (height, width))
         return ar
         
+    """
+    Fonction permettant de d'ouvrir l'application GUI depuis la grille de mots croisés définit dans l'instance
+    """
         
     def displayCrossword(self):
         crossword = self.getCrossword()
@@ -250,6 +258,10 @@ class Crossword:
     
     
     def solve(self):
-        I = self.CSP.solve()
+        try:
+            I = self.CSP.solve()
+        except Exception:
+            print('Aucune solution trouvée pour ce problème')
+            return
         for kd,d in I.items():
             self.words[kd]['word'] = d  
