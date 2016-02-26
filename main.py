@@ -4,18 +4,29 @@ Created on Tue Feb  9 19:49:12 2016
 
 @author: sylom
 """
-import numpy as np
-import crossword as cr
 
-array = np.array(
+import crossword as cr
+import rwclass as rw
+
+"""array = np.array(
 [
     ['-','-','-','*','*'],
     ['-','-','-','-','*'],
     ['-','-','-','-','-'],
     ['*','-','-','-','-'],
     ['*','*','-','-','-'],
-])
+]);
 
+array = np.array(
+[
+    ['*','-','-','-','*','*','*'],
+    ['-','-','-','-','-','*','*'],
+    ['-','-','*','-','-','-','*'],
+    ['-','-','-','-','-','-','-'],
+    ['*','-','-','-','*','-','-'],
+    ['*','*','-','-','-','-','-'],
+    ['*','*','*','-','-','-','*'],
+]);
 
 array = np.array(
 [
@@ -32,17 +43,6 @@ array = np.array(
 
 array = np.array(
 [
-    ['*','-','-','-','*','*','*'],
-    ['-','-','-','-','-','*','*'],
-    ['-','-','*','-','-','-','*'],
-    ['-','-','-','-','-','-','-'],
-    ['*','-','-','-','*','-','-'],
-    ['*','*','-','-','-','-','-'],
-    ['*','*','*','-','-','-','*'],
-])
-"""
-array = np.array(
-[
     ['-','-','-','-','*','-','-','-','-'],
     ['-','*','-','*','*','*','-','*','-'],
     ['-','-','-','-','*','-','-','-','-'],
@@ -54,17 +54,13 @@ array = np.array(
     ['-','-','-','-','*','-','-','-','-']
 ]);
 """
+
 dico = [str.upper(line.rstrip('\n')) for line in open('22600-mots-fr.txt')]
-#dico = [str.upper(line.rstrip('\n')) for line in open('58000-mots-us.txt')]
 
-"""
-dico = []
-dico += ['SITE','SATE','CANS']
-dico += ['BEES','SIDE']
-dico += ['ANT', 'SUN']
-dico += ['IDAS','AXIS','IDLY','DEER','EAST','READ','SUB','IVE','ENDED','TEE','LOS','SASSY','STAND','ALI','EVE','DRIVE','RED','SEE']
-"""
+C = [cr.Crossword.generateCrossword(9,9,20,'CROSSWORD') for i in range(5)]
+rw.RWClass.writeFile("crosswords.pkl", C)
 
-crossword = cr.Crossword(array, dico)
-crossword.solve()
-crossword.displayCrossword()
+C = rw.RWClass.readFile("crosswords.pkl")
+for c in C:
+    cross = cr.Crossword(c,dico)
+    cross.solve()
