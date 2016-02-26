@@ -12,18 +12,23 @@ import solver as sl
 
 class Crossword:
     """ 
-    La classe crossword qui définit la grille de mots croisés
+    Un objet crossword qui définit la grille de mots croisés
     avec un paramètre comprenant la hauteur et la largeur de la grille
     Un paramètre words permet de stocker un dictionnaire d'objet que l'on détaillera par la suite
     Le paramètre CSP permet de stocker le problème sous la forme d'un CSP (détaillé aussi par la suite)
 
-    Le constructuer de cette classe prend en paramètre crossword qui est un np.array de 2 dimensions
-    remplit par des - pour les cases blanches ou des lettres et un caractère quelconque pour les cases noires
-    Par convention et pour faciliter l'unification, on définit les cases noirés par des *
+    Le constructuer de cette classe prend en paramètre crossword qui est un objet crossword
+
+    crossword:
+        - words : dict
+            - index : tuple(index_ligne, index_colonne)
+            - orientation : string (H ou V)
+            - word : string
+        - size : tuple(height,width)
+    
     """
     def __init__(self, crossword, dico):
-        (self.height, self.width) = crossword.shape;
-        self.words = self.getWords(crossword)
+        self.crossword = crossword
         self.CSP = self.getCSP(dico)
         
     """
@@ -33,7 +38,7 @@ class Crossword:
     """
         
     @staticmethod
-    def generateCrossword(height,width, numberBlocks):
+    def generateCrossword(height,width, numberBlocks,typeC='ARRAY'):
         size = height*width
         ar = np.empty(size, dtype=np.str)
         for i in range(size):
@@ -43,14 +48,84 @@ class Crossword:
                 ar[i]= '-'
         np.random.shuffle(ar)
         ar = np.reshape(ar, (height, width))
-        return ar
+        if typeC == 'ARRAY':
+            return ar
+        elif typeC == 'CROSSWORD':
+            return Crossword.getCrossword(ar)
+        else:
+            print('Specifier le type ARRAY ou CROSSWORD')
+            return
+        
+    """ 
+    Fonction static générant un np.array depuis un crossword
+    """
+    
+    @staticmethod
+    def getArrayCrossword(crossword):
+        cr = np.array([['*' for j in range(crossword['size'][1])]for i in range(crossword['size'][0])])
+        for k,w in crossword['words'].items():
+            (indice,start_char) = w['index']
+            l = len(w['word'])
+            for i in range(l):
+                if w['orientation'] == 'H':
+                    cr[indice][(start_char+i)] = w['word'][i]
+                else:
+                    cr[(start_char+i)][indice] = w['word'][i]
+        return cr
+        
+    """
+    Fonction static générant un crossword depuis un np.array
+    """
+    
+    @staticmethod
+    def getCrossword(crosswordArray):
+        crossword = {}
+        crossword['size'] = crosswordArray.shape
+        crossword['words'] = Crossword.getWords(crosswordArray)
+        return crossword
+        
+        """
+    Fonction permettant de trouver l'ensemble des mots de la grille crossword en np.array
+    et retourner un dictionnaire dont la clé d'index attribue un numéro unique au mot
+    Chaque mot comportera:
+    - son orientation 'H' ou 'V'
+    - Le mot sous forme de string
+    - un couple index (i,j) où i est l'indice ligne ou colonne selon l'orientation et 
+    j l'indice d'où commence le mot dans la ligne ou colonne
+    """
+    @staticmethod
+    def getWords(crossword):
+        """ On récupère la liste des lignes de la matrice """
+        rows = ["".join(np.reshape(n,crossword.shape[1]).tolist()) for n in np.vsplit(crossword,crossword.shape[0])];
+        """ On récupère la liste des colonnes de la matrice"""
+        columns = ["".join(np.reshape(n,crossword.shape[0]).tolist()) for n in np.hsplit(crossword,crossword.shape[1])];
+        """ 
+        On instancie un dictionnaire vide words ainsi que la variable index à 0
+        """
+        words = {}
+        index = 0
+        
+        """
+        On filtre ensuite grâce à une regex [a-zA-Z\-][a-zA-Z\-]+ chaque ligne et colonne une à une
+        La regex [a-zA-Z\-][a-zA-Z\-]+ récupère dans un string l'ensemble des groupes comportant au moins deux lettres ou deux tirets
+        (on considère qu'un mot ne peut être inférieur à deux lettres)
+        """
+        for i in range(crossword.shape[0]):
+            for m in re.finditer('[a-zA-Z\-][a-zA-Z\-]+', rows[i]):
+                 words [index] = {'word':m.group(0), 'index':(i,m.start()), 'orientation': 'H'}
+                 index += 1
+        for i in range(crossword.shape[1]):
+            for m in re.finditer('[a-zA-Z\-][a-zA-Z\-]+', columns[i]):
+                 words [index] = {'word':m.group(0), 'index':(i,m.start()), 'orientation': 'V'}
+                 index += 1
+        return words
         
     """
     Fonction permettant de d'ouvrir l'application GUI depuis la grille de mots croisés définit dans l'instance
     """
         
     def displayCrossword(self):
-        crossword = self.getCrossword()
+        crossword = Crossword.getArrayCrossword(self.crossword)
         fenetre = tk.Tk()
         l=0
         c=0
@@ -90,59 +165,7 @@ class Crossword:
         fenetre.config(menu=menubar)      
         
         fenetre.mainloop()
-        return
-        
-    """ 
-    Fonction générant un np.array depuis l'instance remplit des mots contenues dans words
-    """
-    def getCrossword(self):
-        cr = np.array([['*' for j in range(self.width)]for i in range(self.height)])
-        for k,w in self.words.items():
-            (indice,start_char) = w['index']
-            l = len(w['word'])
-            for i in range(l):
-                if w['orientation'] == 'H':
-                    cr[indice][(start_char+i)] = w['word'][i]
-                else:
-                    cr[(start_char+i)][indice] = w['word'][i]
-        return cr
-        
-    """
-    Fonction permettant de trouver l'ensemble des mots de la grille crossword en np.array
-    et retourner un dictionnaire dont la clé d'index attribue un numéro unique au mot
-    Chaque mot comportera:
-    - son orientation 'H' ou 'V'
-    - Le mot sous forme de string
-    - un couple index (i,j) où i est l'indice ligne ou colonne selon l'orientation et 
-    j l'indice d'où commence le mot dans la ligne ou colonne
-    """
-        
-    def getWords(self, crossword):
-        """ On récupère la liste des lignes de la matrice """
-        rows = ["".join(np.reshape(n,self.width).tolist()) for n in np.vsplit(crossword,self.height)];
-        """ On récupère la liste des colonnes de la matrice"""
-        columns = ["".join(np.reshape(n,self.height).tolist()) for n in np.hsplit(crossword,self.width)];
-        """ 
-        On instancie un dictionnaire vide words ainsi que la variable index à 0
-        """
-        words = {}
-        index = 0
-        
-        """
-        On filtre ensuite grâce à une regex [a-zA-Z\-][a-zA-Z\-]+ chaque ligne et colonne une à une
-        La regex [a-zA-Z\-][a-zA-Z\-]+ récupère dans un string l'ensemble des groupes comportant au moins deux lettres ou deux tirets
-        (on considère qu'un mot ne peut être inférieur à deux lettres)
-        """
-        for i in range(self.height):
-            for m in re.finditer('[a-zA-Z\-][a-zA-Z\-]+', rows[i]):
-                 words [index] = {'word':m.group(0), 'index':(i,m.start()), 'orientation': 'H'}
-                 index += 1
-        for i in range(self.width):
-            for m in re.finditer('[a-zA-Z\-][a-zA-Z\-]+', columns[i]):
-                 words [index] = {'word':m.group(0), 'index':(i,m.start()), 'orientation': 'V'}
-                 index += 1
-        return words
-        
+        return        
         
     """
     Fonction permettant de créer la liste des contraintes des mots entre eux en retournant
@@ -155,7 +178,7 @@ class Crossword:
         contraints = []
         words_h = []
         words_v = []
-        for key, value in self.words.items():
+        for key, value in self.crossword['words'].items():
             if(value['orientation'] == 'H'):
                 words_h += [(key,value)]
             else:
@@ -195,15 +218,14 @@ class Crossword:
             return w1[i1] == w2[i2]
         def differentWord(w1,w2):
             return not (w1 == w2)
-        
         """
         On définitX et le nom des variables de chaque mot par leur numéro respectif dans le dictionnaire words (défini plus haut) 
         On initialise le domaine D et on copie le dictionnaire de mots (le vrai) dans le domaine de chaque variable
         """
-        X = list(self.words.keys())
+        X = list(self.crossword['words'].keys())
         D = {}
         for x in X:
-            D[x] = list(filter(lambda w: len(self.words[x]['word']) == len(w) ,dico.copy()))
+            D[x] = list(filter(lambda w: len(self.crossword['words'][x]['word']) == len(w) ,dico.copy()))
             
         """
         On initialise R1 et R2
@@ -213,7 +235,7 @@ class Crossword:
         R1 = {}
         R2 = {}   
         
-        for k,w in self.words.items():
+        for k,w in self.crossword['words'].items():
             R1[k] = [ft.partial(testCharacter, i=m.start(), c=m.group(0)) for m in re.finditer('[a-zA-Z]', w['word'])]
             
         """
@@ -241,7 +263,7 @@ class Crossword:
                 R2[(iv,ih)] += [ft.partial(testSameCharacters, i1=cv, i2=ch)]
             else:
                 R2[(iv,ih)] = [ft.partial(testSameCharacters, i1=cv, i2=ch)]
-            
+        
         return sl.CSP(X,D,(R1,R2))
         
     """
@@ -260,4 +282,4 @@ class Crossword:
             print('Aucune solution trouvée pour ce problème')
             return
         for kd,d in I.items():
-            self.words[kd]['word'] = d  
+            self.crossword['words'][kd]['word'] = d  
