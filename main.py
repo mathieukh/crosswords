@@ -7,8 +7,9 @@ Created on Tue Feb  9 19:49:12 2016
 
 import crossword as cr
 import rwclass as rw
+import numpy as np
 
-"""array = np.array(
+arrayA = np.array(
 [
     ['-','-','-','*','*'],
     ['-','-','-','-','*'],
@@ -17,7 +18,7 @@ import rwclass as rw
     ['*','*','-','-','-'],
 ]);
 
-array = np.array(
+arrayB = np.array(
 [
     ['*','-','-','-','*','*','*'],
     ['-','-','-','-','-','*','*'],
@@ -28,7 +29,7 @@ array = np.array(
     ['*','*','*','-','-','-','*'],
 ]);
 
-array = np.array(
+arrayC = np.array(
 [
     ['*','*','*','-','-','-','*','*','*'],
     ['*','*','-','-','-','-','-','*','*'],
@@ -53,14 +54,18 @@ array = np.array(
     ['-','*','-','*','*','*','-','*','-'],
     ['-','-','-','-','*','-','-','-','-']
 ]);
-"""
 
-dico = [str.upper(line.rstrip('\n')) for line in open('22600-mots-fr.txt')]
 
-C = [cr.Crossword.generateCrossword(9,9,20,'CROSSWORD') for i in range(5)]
-rw.RWClass.writeFile("crosswords.pkl", C)
 
-C = rw.RWClass.readFile("crosswords.pkl")
-for c in C:
-    cross = cr.Crossword(c,dico)
-    cross.solve()
+dico850 = [str.upper(line.rstrip('\n')) for line in open('850-mots-us.txt')]
+dico22600 = [str.upper(line.rstrip('\n')) for line in open('22600-mots-fr.txt')]
+dico58000 = [str.upper(line.rstrip('\n')) for line in open('58000-mots-us.txt')]
+
+dico850_valued = [ (d,0.1) for d in dico850]
+dicoReduit = rw.RWClass.readFile('dico_reduit.txt')
+dicoReduit_valued = [ (d,1) for d in dicoReduit]
+dico_v =  dicoReduit_valued + dico850_valued
+
+C = cr.getCrossword(array)
+cr.solve_valued(C,dico_v)
+cr.displayCrossword(C)
