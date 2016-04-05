@@ -7,6 +7,8 @@ Created on Wed Feb 10 20:27:44 2016
 
 import copy as cp
 import random as rand
+import numpy as np
+import functools as ft
       
 class CSP:
     """
@@ -333,13 +335,13 @@ class ValuedCSP:
         self.R2 = R2
         self.VM = VM
         self.f = f
-        def fBorne(V,v):
-            if not V:
-                return v
-            else:
-                return fBorne(V[1:], self.f(v,V[0]))
-        self.fBorne = lambda V, v: fBorne([ max([self.VM[k][x] for k in self.VM.keys()]) for x in V.keys()],v)
         self.initValue = initValue
+        def fValue(I):
+            return ft.reduce(f,I,initValue)
+        def fBorne(V):
+            return fValue([max([ vi for (wi,vi) in sorted([ (wd,self.VM[wd][kd]) for wd in ld],key=lambda w: w[1], reverse=True)]) for kd,ld in V.items()])
+        self.fValue = fValue
+        self.fBorne = fBorne
         
     """
     Fonction domain_min permettant de renvoyer depuis une liste de variables données une liste de variables
@@ -363,7 +365,10 @@ class ValuedCSP:
     On renvoie depuis cette fonction un choix aléatoire de la liste renvoyé par la fonction
     """
     def choose_variable(self,V):
-        Vc = self.domain_min(V)
+        Vca = {  k:sum([ 0 if (k,ky) not in self.R2 else len(self.R2[(k,ky)]) for ky in self.X if not ky == k]) for k in V.keys()}
+        m = max(Vca.values())
+        Vd = {k:l for k,l in V.items() if Vca[k] == m }
+        Vc = self.domain_min(Vd)
         return rand.choice(Vc)
         
     """
@@ -409,12 +414,9 @@ class ValuedCSP:
     def getInstance(self,frontiere):
         frontiere.sort(key=lambda f: (f['borne'], -len(f['V'])))
         return frontiere.pop()
-            
-    
         
     def DjiCSP(self,V,I):
-        V = { kd:[ w for (v,w) in sorted(zip([self.VM[k][kd] for k in self.VM.keys()],ld),key=lambda w: w[0], reverse=True)] for kd,ld in V.items()}
-        frontiere = [{'value':self.initValue, 'V': V, 'I': I, 'borne': self.fBorne(V,self.initValue)}]
+        frontiere = [{'value':self.initValue, 'V': V, 'I': I, 'borne': self.fBorne(V)}]
         while frontiere:
             P = self.getInstance(frontiere)
             if not P['V']:
@@ -433,6 +435,34 @@ class ValuedCSP:
                 except Exception:
                     continue
         raise Exception
+
+    def DFS_CSP(self,V,I,borne,value,bestSolution):
+        if not V:
+            return {'value': value, 'I': I}
+        else:
+            xk = self.choose_variable(V)
+            for v in V[xk]:
+                try:
+                    V_n = cp.deepcopy(V)
+                    I_n = cp.deepcopy(I)
+                    del V_n[xk]
+                    I_n[xk] = v
+                    self.propagate(xk,v,V_n,I_n)
+                    v_n = self.f(value, self.VM[v][xk])
+                    bornSup = self.f(v_n,self.fBorne(V_n))
+                    if bornSup<=borne and bestSolution:
+                        break
+                    else:
+                        sol = self.DFS_CSP(V_n, I_n, borne, v_n, bestSolution)
+                        if (sol and (not bestSolution or (sol['value']>bestSolution['value']))):
+                            bestSolution = sol
+                            borne = bestSolution['value']
+                except Exception:
+                    pass
+            return bestSolution
+        
+            
+        
                 
     """
     La fonction solve permet d'appeler la fonction DjiCSP sur le problème de l'objet.
@@ -449,7 +479,13 @@ class ValuedCSP:
             v = next((c for c in V.keys() if len(V[c]) == 1),None)
             if v:
                 self.propagate(v,I[v],V,I)
-            self.I = self.DjiCSP(V,I)
+#            self.I = self.DjiCSP(V,I)
+            V = { kd: [ wi for (wi,vi) in sorted([ (wd,self.VM[wd][kd]) for wd in ld],key=lambda w: w[1], reverse=True)] for kd,ld in V.items()}
+            sol = self.DFS_CSP(V,I,self.initValue,self.initValue,None)
+            if sol:
+                self.I = sol['I']
+            else:
+                raise Exception
         except Exception:
             raise Exception('Aucune solution trouvée')
         return self.I

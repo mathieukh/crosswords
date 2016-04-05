@@ -10,12 +10,6 @@ import statsmodels.api as sm
 import numpy as np
 import pandas as pd
 
-"""
-La grille A comporte 54 contraintes,
-La grille B comporte 148 contraintes,
-La grille C comporte 240 contraintes
-"""
-
 dico_size = [848,22472,58108]
 
 #AC3 Uniquement
@@ -109,15 +103,10 @@ plt.show()
 avantageCBJ_FC = ((np.divide(cbj,fc) * 100) - 100) * -1
 meanAv = np.mean(avantageCBJ_FC)
 
-"""
-La matrice représente les avantages de l'algorithme CBJ sur le FC
-Chaque ligne correspond à une grille (A,B,C) et chaque colonne les dictionnaires
-Les valeurs de la matrice montre l'avantage en pourcentage du CBJ sur le FC
-On remarque que le FC est plus plus avantageux sur la grille B et le dictionnaire de 58000 mots 
-mais les temps du CBJ sont en moyenne un peu près 50% meilleurs que ceux du FC
-"""
 
-
+"""
+data : matrice qui représente les avantages de l'algorithme CBJ sur le FC
+"""
 data = np.array(
 [
     [1.126, 54, 848],
@@ -148,9 +137,7 @@ est = sm.OLS(y,X1).fit()
 P = est.params
 
 """
-On utilise la régression multiple pour essayer de déduire une loi dirigeant le temps d'exécution de l'AC3 en fonction
-de la taille du dictionnaire et du nombre de contraintes.
-Cette analyse nous mène à une fonction telle que :
+Fonction qui permet de déduire une loi dirigeant le temps d'exécution de l'AC3 en fonction de la taille du dictionnaire et du nombre de contraintes
 """
 def predictTime(contraintes,dico):
     return (dico * P['Dictionnaire']) + (contraintes * P['Contraintes']) + P['const']
